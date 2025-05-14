@@ -2,10 +2,11 @@ import { useState } from 'react'
 import { Tabs } from 'antd'
 import EventForm from './components/EventForm'
 import SavedCalculations from './components/SavedCalculations'
+import type { LaytimeCalculation } from './types/laytime'
 import './App.css'
 
 function App() {
-  const [selectedCalculation, setSelectedCalculation] = useState(null)
+  const [selectedCalculation, setSelectedCalculation] = useState<LaytimeCalculation | undefined>(undefined)
   const [activeTab, setActiveTab] = useState('new')
 
   return (
@@ -24,7 +25,7 @@ function App() {
           items={[{
             key: 'new',
             label: 'New Calculation',
-            children: <EventForm initialCalculation={selectedCalculation} onClearCalculation={() => setSelectedCalculation(null)} />
+            children: <EventForm initialCalculation={selectedCalculation} onClearCalculation={() => setSelectedCalculation(undefined)} />
           }, {
             key: 'saved',
             label: 'Saved Calculations',

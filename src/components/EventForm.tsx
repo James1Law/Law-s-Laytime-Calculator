@@ -1,25 +1,9 @@
-import React, { useState, useEffect } from 'react'
-import { Button, Input, Form, InputNumber, DatePicker, Card, Space, Typography, Divider } from 'antd'
-import { PDFDownloadLink, Document, Page, Text, View, StyleSheet, Font } from '@react-pdf/renderer'
+import { useState, useEffect } from 'react'
+import { Button, Form, InputNumber, Card, Space, Typography } from 'antd'
+import { PDFDownloadLink, Document, Page, Text, View, StyleSheet } from '@react-pdf/renderer'
 import dayjs from 'dayjs'
 import PortForm from './PortForm'
 import type { Port, LaytimeCalculation } from '../types/laytime'
-
-interface Event {
-  name: string
-  start: string
-  end: string
-  percentage: number
-}
-
-function getDurationHours(start: string, end: string, percentage: number) {
-  if (!start || !end) return 0
-  const startDate = new Date(start)
-  const endDate = new Date(end)
-  const ms = endDate.getTime() - startDate.getTime()
-  const hours = ms / (1000 * 60 * 60)
-  return hours * (percentage / 100)
-}
 
 // PDF Styles
 const styles = StyleSheet.create({
@@ -83,7 +67,7 @@ const styles = StyleSheet.create({
   },
 })
 
-function LaytimePDF({ ports, allowedLaytime, demurrageRate, laytimeUsed, remainingLaytime, demurrageCost }: {
+function LaytimePDF({ ports, allowedLaytime, demurrageRate: _demurrageRate, laytimeUsed, remainingLaytime, demurrageCost }: {
   ports: Port[]
   allowedLaytime: number
   demurrageRate: number
@@ -179,7 +163,7 @@ function calculateLaytimeUsed(ports: Port[]): number {
   }, 0)
 }
 
-export default function EventForm({ initialCalculation, onClearCalculation }: { initialCalculation?: any, onClearCalculation?: () => void }) {
+export default function EventForm({ initialCalculation, onClearCalculation }: { initialCalculation?: LaytimeCalculation, onClearCalculation?: () => void }) {
   const [ports, setPorts] = useState<Port[]>(initialCalculation?.ports || [])
   const [allowedLaytime, setAllowedLaytime] = useState(initialCalculation?.allowedLaytime || 0)
   const [demurrageRate, setDemurrageRate] = useState(initialCalculation?.demurrageRate || 0)

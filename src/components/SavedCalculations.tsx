@@ -1,13 +1,13 @@
-import React from 'react'
 import { PDFDownloadLink } from '@react-pdf/renderer'
 import { LaytimePDF } from './EventForm'
+import type { LaytimeCalculation } from '../types/laytime'
 
 interface SavedCalculationsProps {
-  onOpenCalculation?: (calc: any) => void
+  onOpenCalculation?: (calc: LaytimeCalculation) => void
 }
 
 export default function SavedCalculations({ onOpenCalculation }: SavedCalculationsProps) {
-  const saved = JSON.parse(localStorage.getItem('laytime_calculations') || '[]')
+  const saved = JSON.parse(localStorage.getItem('laytime_calculations') || '[]') as LaytimeCalculation[]
 
   return (
     <div className="flex flex-col items-center min-h-screen bg-zinc-50 dark:bg-zinc-900 py-10">
