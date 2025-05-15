@@ -58,7 +58,6 @@ function AppContent() {
                 <div className="card-panel">
                   <EventForm 
                     initialCalculation={selectedCalculation} 
-                    onClearCalculation={() => setSelectedCalculation(undefined)}
                     onSaved={() => navigate('/saved-calculations')}
                   />
                 </div>
@@ -83,7 +82,6 @@ function AppContent() {
                 <div className="card-panel">
                   <EventForm 
                     initialCalculation={selectedCalculation} 
-                    onClearCalculation={() => setSelectedCalculation(undefined)}
                     onSaved={() => navigate('/saved-calculations')}
                   />
                 </div>
