@@ -417,7 +417,6 @@ export default function EventForm({ initialCalculation, onSaved }: { initialCalc
   }, [initialCalculation])
 
   const laytimeUsed = calculateLaytimeUsed(ports)
-  const remainingLaytime = allowedLaytime - laytimeUsed
   const demurrageRatePerHour = demurrageRate / 24
   const demurrageCost = laytimeUsed > allowedLaytime
     ? (laytimeUsed - allowedLaytime) * demurrageRatePerHour
@@ -431,7 +430,7 @@ export default function EventForm({ initialCalculation, onSaved }: { initialCalc
       allowedLaytime,
       demurrageRate,
       laytimeUsed,
-      remainingLaytime,
+      remainingLaytime: 0,
       demurrageCost,
       vesselName,
       owner,
@@ -544,10 +543,6 @@ export default function EventForm({ initialCalculation, onSaved }: { initialCalc
               {laytimeUsed.toFixed(2)} hours
             </Typography.Text>
             <Typography.Text>
-              <Typography.Text strong>Remaining Laytime:</Typography.Text>{' '}
-              {remainingLaytime.toFixed(2)} hours
-            </Typography.Text>
-            <Typography.Text>
               <Typography.Text strong>Demurrage Cost:</Typography.Text>{' '}
               <Typography.Text type={demurrageCost > 0 ? 'danger' : undefined} strong>
                 ${ukNumberFormat.format(demurrageCost)}
@@ -569,7 +564,7 @@ export default function EventForm({ initialCalculation, onSaved }: { initialCalc
                 allowedLaytime={allowedLaytime}
                 demurrageRate={demurrageRate}
                 laytimeUsed={laytimeUsed}
-                remainingLaytime={remainingLaytime}
+                remainingLaytime={0}
                 demurrageCost={demurrageCost}
                 vesselName={vesselName}
                 owner={owner}
