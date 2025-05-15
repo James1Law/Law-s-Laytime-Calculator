@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import { Button, Form, InputNumber, Space, Typography, Tooltip } from 'antd'
+import { Button, Form, InputNumber, Space, Typography, Tooltip, DatePicker, Input } from 'antd'
 import { PDFDownloadLink, Document, Page, Text, View, StyleSheet } from '@react-pdf/renderer'
 import dayjs from 'dayjs'
 import PortForm from './PortForm'
@@ -168,12 +168,28 @@ export default function EventForm({ initialCalculation, onClearCalculation }: { 
   const [ports, setPorts] = useState<Port[]>(initialCalculation?.ports || [])
   const [allowedLaytime, setAllowedLaytime] = useState(initialCalculation?.allowedLaytime || 0)
   const [demurrageRate, setDemurrageRate] = useState(initialCalculation?.demurrageRate || 0)
+  const [vesselName, setVesselName] = useState('')
+  const [owner, setOwner] = useState('')
+  const [charterer, setCharterer] = useState('')
+  const [cargoName, setCargoName] = useState('')
+  const [voyageNo, setVoyageNo] = useState('')
+  const [cpDate, setCpDate] = useState(null as any)
+  const [blDate, setBlDate] = useState(null as any)
+
+  const ukNumberFormat = new Intl.NumberFormat('en-GB', { minimumFractionDigits: 2, maximumFractionDigits: 2 })
 
   useEffect(() => {
     if (initialCalculation) {
       setPorts(initialCalculation.ports || [])
       setAllowedLaytime(initialCalculation.allowedLaytime || 0)
       setDemurrageRate(initialCalculation.demurrageRate || 0)
+      setVesselName(initialCalculation.vesselName || '')
+      setOwner(initialCalculation.owner || '')
+      setCharterer(initialCalculation.charterer || '')
+      setCargoName(initialCalculation.cargoName || '')
+      setVoyageNo(initialCalculation.voyageNo || '')
+      setCpDate(initialCalculation.cpDate ? dayjs(initialCalculation.cpDate) : null)
+      setBlDate(initialCalculation.blDate ? dayjs(initialCalculation.blDate) : null)
     }
   }, [initialCalculation])
 
@@ -195,27 +211,56 @@ export default function EventForm({ initialCalculation, onClearCalculation }: { 
             </Tooltip>
           </div>
           <div className="flex flex-row gap-4">
-            <Form layout="vertical" className="w-full flex flex-row gap-4">
-              <Form.Item label="Allowed Laytime (hours)" className="flex-1 !mb-0">
-                <InputNumber
-                  value={allowedLaytime}
-                  onChange={value => setAllowedLaytime(Number(value))}
-                  min={0}
-                  className="w-full"
-                  size="large"
-                  placeholder="Allowed Laytime (hours)"
-                />
-              </Form.Item>
-              <Form.Item label="Demurrage Rate (USD/day)" className="flex-1 !mb-0">
-                <InputNumber
-                  value={demurrageRate}
-                  onChange={value => setDemurrageRate(Number(value))}
-                  min={0}
-                  className="w-full"
-                  size="large"
-                  placeholder="Demurrage Rate (USD/day)"
-                />
-              </Form.Item>
+            <Form layout="vertical" className="w-full">
+              <div style={{ display: 'flex', gap: 16 }}>
+                <Form.Item label="Vessel Name" className="flex-1 !mb-0">
+                  <Input value={vesselName} onChange={e => setVesselName(e.target.value)} placeholder="Vessel Name" size="large" />
+                </Form.Item>
+                <Form.Item label="Owner" className="flex-1 !mb-0">
+                  <Input value={owner} onChange={e => setOwner(e.target.value)} placeholder="Owner" size="large" />
+                </Form.Item>
+                <Form.Item label="Charterer" className="flex-1 !mb-0">
+                  <Input value={charterer} onChange={e => setCharterer(e.target.value)} placeholder="Charterer" size="large" />
+                </Form.Item>
+              </div>
+              <div style={{ display: 'flex', gap: 16, marginTop: 16 }}>
+                <Form.Item label="Cargo Name" className="flex-1 !mb-0">
+                  <Input value={cargoName} onChange={e => setCargoName(e.target.value)} placeholder="Cargo Name" size="large" />
+                </Form.Item>
+                <Form.Item label="Voyage No." className="flex-1 !mb-0">
+                  <Input value={voyageNo} onChange={e => setVoyageNo(e.target.value)} placeholder="Voyage No." size="large" />
+                </Form.Item>
+                <Form.Item label="CP Date" className="flex-1 !mb-0">
+                  <DatePicker value={cpDate} onChange={setCpDate} className="w-full" size="large" format="DD MMM YYYY" />
+                </Form.Item>
+              </div>
+              <div style={{ display: 'flex', gap: 16, marginTop: 16 }}>
+                <Form.Item label="B/L Date" className="flex-1 !mb-0">
+                  <DatePicker value={blDate} onChange={setBlDate} className="w-full" size="large" format="DD MMM YYYY" />
+                </Form.Item>
+                <Form.Item label="Allowed Laytime (hours)" className="flex-1 !mb-0">
+                  <InputNumber
+                    value={allowedLaytime}
+                    onChange={value => setAllowedLaytime(Number(value))}
+                    min={0}
+                    className="w-full"
+                    size="large"
+                    placeholder="Allowed Laytime (hours)"
+                  />
+                </Form.Item>
+                <Form.Item label="Demurrage Rate (USD/day)" className="flex-1 !mb-0">
+                  <InputNumber
+                    value={demurrageRate}
+                    onChange={value => setDemurrageRate(Number(value))}
+                    min={0}
+                    className="w-full"
+                    size="large"
+                    placeholder="Demurrage Rate (USD/day)"
+                    formatter={value => typeof value === 'number' ? ukNumberFormat.format(value) : (value ? ukNumberFormat.format(Number(value)) : '')}
+                    parser={value => value ? Number(value.replace(/,/g, '')) : 0}
+                  />
+                </Form.Item>
+              </div>
             </Form>
           </div>
         </div>
@@ -238,11 +283,11 @@ export default function EventForm({ initialCalculation, onClearCalculation }: { 
             <Typography.Text>
               <Typography.Text strong>Demurrage Cost:</Typography.Text>{' '}
               <Typography.Text type={demurrageCost > 0 ? 'danger' : undefined} strong>
-                ${demurrageCost.toFixed(2)}
+                ${ukNumberFormat.format(demurrageCost)}
               </Typography.Text>
               {demurrageRate > 0 && (
                 <Typography.Text type="secondary" className="ml-2">
-                  (at ${demurrageRate.toFixed(2)}/day)
+                  (at ${ukNumberFormat.format(demurrageRate)}/day)
                 </Typography.Text>
               )}
             </Typography.Text>
@@ -287,12 +332,26 @@ export default function EventForm({ initialCalculation, onClearCalculation }: { 
                 laytimeUsed,
                 remainingLaytime,
                 demurrageCost,
+                vesselName,
+                owner,
+                charterer,
+                cargoName,
+                voyageNo,
+                cpDate: cpDate ? cpDate.toISOString() : undefined,
+                blDate: blDate ? blDate.toISOString() : undefined,
               }
               const saved = JSON.parse(localStorage.getItem('calculations') || '[]')
               localStorage.setItem('calculations', JSON.stringify([...saved, calculation]))
               setPorts([])
               setAllowedLaytime(0)
               setDemurrageRate(0)
+              setVesselName('')
+              setOwner('')
+              setCharterer('')
+              setCargoName('')
+              setVoyageNo('')
+              setCpDate(null)
+              setBlDate(null)
             }}
           >
             Save Calculation

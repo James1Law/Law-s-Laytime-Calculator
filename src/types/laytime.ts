@@ -34,4 +34,11 @@ export interface LaytimeCalculation {
   laytimeUsed: number
   remainingLaytime: number
   demurrageCost: number
+  vesselName?: string
+  owner?: string
+  charterer?: string
+  cargoName?: string
+  voyageNo?: string
+  cpDate?: string
+  blDate?: string
 } 

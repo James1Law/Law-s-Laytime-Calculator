@@ -92,7 +92,7 @@ export default function PortForm({ onPortsChange, initialPorts }: PortFormProps)
   }
 
   const handleAddDeduction = (portId: string, values: any) => {
-    const durationHours = Number(values.hours || 0) + Number(values.minutes || 0) / 60
+    const durationHours = Number(values.hours || 0)
     const newDeduction: Deduction = {
       id: crypto.randomUUID(),
       description: values.description,
@@ -262,10 +262,7 @@ export default function PortForm({ onPortsChange, initialPorts }: PortFormProps)
                 <Input placeholder="e.g., Tank Wash" />
               </Form.Item>
               <Form.Item name="hours" rules={[{ required: true, message: 'Hours' }]}> 
-                <Input type="number" min={0} placeholder="Hours" />
-              </Form.Item>
-              <Form.Item name="minutes" rules={[{ required: true, message: 'Minutes' }]}> 
-                <Input type="number" min={0} max={59} placeholder="Minutes" />
+                <Input type="number" min={0} step="any" placeholder="Hours (decimals allowed)" />
               </Form.Item>
               <Form.Item>
                 <Button type="primary" htmlType="submit" icon={<PlusOutlined />}>Add Deduction</Button>
