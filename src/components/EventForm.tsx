@@ -1,9 +1,10 @@
 import { useState, useEffect } from 'react'
-import { Button, Form, InputNumber, Card, Space, Typography } from 'antd'
+import { Button, Form, InputNumber, Card, Space, Typography, Tooltip } from 'antd'
 import { PDFDownloadLink, Document, Page, Text, View, StyleSheet } from '@react-pdf/renderer'
 import dayjs from 'dayjs'
 import PortForm from './PortForm'
 import type { Port, LaytimeCalculation } from '../types/laytime'
+import { InfoCircleOutlined } from '@ant-design/icons'
 
 // PDF Styles
 const styles = StyleSheet.create({
@@ -188,8 +189,11 @@ export default function EventForm({ initialCalculation, onClearCalculation }: { 
       <Card className="w-full max-w-4xl">
         <Space direction="vertical" size="large" className="w-full">
           <Card>
-            <Typography.Title level={4} className="!mb-6">
+            <Typography.Title level={4} className="!mb-6 flex items-center gap-2">
               Laytime Settings
+              <Tooltip title="Details as per charterparty">
+                <InfoCircleOutlined style={{ fontSize: 12, color: '#64748b', cursor: 'pointer', marginLeft: 6, transform: 'translateY(-3px)' }} />
+              </Tooltip>
             </Typography.Title>
             <Space direction="horizontal" size="middle" className="w-full">
               <Form layout="vertical" className="w-full flex flex-row gap-4">
