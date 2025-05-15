@@ -21,11 +21,6 @@ export default function PortForm({ onPortsChange, initialPorts }: PortFormProps)
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [initialPorts])
 
-  const getDayOfWeek = (dateString: string) => {
-    if (!dateString) return ''
-    return dayjs(dateString).format('dddd')
-  }
-
   const calculateDuration = (startDate: string, startTime: string, endDate: string, endTime: string, percent: number) => {
     if (!startDate || !startTime || !endDate || !endTime) return 0
     const start = dayjs(`${startDate}T${startTime}`)
