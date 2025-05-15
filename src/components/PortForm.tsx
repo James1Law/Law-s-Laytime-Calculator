@@ -1,7 +1,8 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { Button, Input, Form, Select, Space, Typography, Divider, Switch, DatePicker, TimePicker, Table } from 'antd'
 import { PlusOutlined, DeleteOutlined } from '@ant-design/icons'
 import type { Port, PortEvent, Deduction } from '../types/laytime'
+import { uuidv4 } from '../lib/uuid'
 import dayjs from 'dayjs'
 
 interface PortFormProps {
@@ -11,7 +12,9 @@ interface PortFormProps {
 
 export default function PortForm({ onPortsChange, initialPorts }: PortFormProps) {
   const [ports, setPorts] = useState<Port[]>(initialPorts || [])
-  const [form] = Form.useForm()
+  const [addPortForm] = Form.useForm()
+  const [eventForm] = Form.useForm()
+  const [countsTowardsLaytime, setCountsTowardsLaytime] = useState<{ [portId: string]: boolean }>({})
 
   useEffect(() => {
     if (initialPorts) {
@@ -31,7 +34,7 @@ export default function PortForm({ onPortsChange, initialPorts }: PortFormProps)
 
   const handleAddPort = (values: { name: string; type: 'loading' | 'discharging' }) => {
     const newPort: Port = {
-      id: crypto.randomUUID(),
+      id: uuidv4(),
       name: values.name,
       type: values.type,
       events: [],
@@ -39,7 +42,7 @@ export default function PortForm({ onPortsChange, initialPorts }: PortFormProps)
     const updatedPorts = [...ports, newPort]
     setPorts(updatedPorts)
     onPortsChange(updatedPorts)
-    form.resetFields()
+    addPortForm.resetFields()
   }
 
   const handleRemovePort = (portId: string) => {
@@ -55,26 +58,27 @@ export default function PortForm({ onPortsChange, initialPorts }: PortFormProps)
     { title: 'End Time', dataIndex: 'endTime', key: 'endTime' },
     { title: 'Description', dataIndex: 'description', key: 'description' },
     { title: 'Counts', dataIndex: 'counts', key: 'counts', render: (counts: boolean) => (counts ? 'Yes' : 'No') },
-    { title: 'Laytime %', dataIndex: 'laytimePercent', key: 'laytimePercent', render: (p: number) => `${p}%` },
-    { title: 'Duration (hrs)', dataIndex: 'calculatedDuration', key: 'calculatedDuration', render: (d: number) => d?.toFixed(2) ?? '-' },
+    { title: 'Laytime %', dataIndex: 'laytimePercent', key: 'laytimePercent', render: (_: number, record: PortEvent) => record.counts ? `${record.laytimePercent}%` : '0%' },
+    { title: 'Duration (hrs)', dataIndex: 'calculatedDuration', key: 'calculatedDuration', render: (_: number, record: PortEvent) => record.counts ? (record.calculatedDuration?.toFixed(2) ?? '-') : '0.00' },
   ]
 
-  const handleAddEvent = (portId: string, values: any) => {
+  const handleAddEvent = (portId: string, values: any, eventForm?: any) => {
     const startDate = values.startDate.format('YYYY-MM-DD')
     const startTime = values.startTime.format('HH:mm')
     const endDate = values.endDate.format('YYYY-MM-DD')
     const endTime = values.endTime.format('HH:mm')
-    const percent = values.laytimePercent ?? 100
+    const counts = !!values.counts
+    const percent = counts ? (values.laytimePercent ?? 100) : 0
     const duration = calculateDuration(startDate, startTime, endDate, endTime, percent)
     const newEvent: PortEvent = {
-      id: crypto.randomUUID(),
+      id: uuidv4(),
       startDate,
       startTime,
       endDate,
       endTime,
       description: values.description,
-      counts: values.counts,
-      laytime: values.counts,
+      counts,
+      laytime: counts,
       laytimePercent: percent,
       calculatedDuration: duration,
     }
@@ -89,12 +93,16 @@ export default function PortForm({ onPortsChange, initialPorts }: PortFormProps)
     })
     setPorts(updatedPorts)
     onPortsChange(updatedPorts)
+    setCountsTowardsLaytime(prev => ({ ...prev, [portId]: true }))
+    if (eventForm) {
+      eventForm.resetFields(['startDate', 'startTime', 'endDate', 'endTime', 'description', 'counts', 'laytimePercent'])
+    }
   }
 
   const handleAddDeduction = (portId: string, values: any) => {
     const durationHours = Number(values.hours || 0)
     const newDeduction: Deduction = {
-      id: crypto.randomUUID(),
+      id: uuidv4(),
       description: values.description,
       durationHours,
     }
@@ -121,7 +129,7 @@ export default function PortForm({ onPortsChange, initialPorts }: PortFormProps)
       <div className="card-panel">
         <div className="section-title">Add Port</div>
         <Form
-          form={form}
+          form={addPortForm}
           onFinish={handleAddPort}
           layout="vertical"
           size="large"
@@ -172,10 +180,11 @@ export default function PortForm({ onPortsChange, initialPorts }: PortFormProps)
           </div>
           <div className="space-y-4">
             <Form
-              onFinish={(values) => handleAddEvent(port.id, values)}
+              onFinish={(values) => handleAddEvent(port.id, values, eventForm)}
               layout="vertical"
               size="large"
               initialValues={{ counts: true, laytimePercent: 100 }}
+              form={eventForm}
             >
               <div className="flex flex-row gap-4">
                 <Form.Item
@@ -226,7 +235,18 @@ export default function PortForm({ onPortsChange, initialPorts }: PortFormProps)
                   className="!mb-0"
                   initialValue={true}
                 >
-                  <Switch defaultChecked />
+                  <Switch
+                    defaultChecked
+                    onChange={checked => {
+                      setCountsTowardsLaytime(prev => ({ ...prev, [port.id]: checked }))
+                      if (!checked) {
+                        eventForm.setFieldsValue({ laytimePercent: 0 })
+                      } else {
+                        eventForm.setFieldsValue({ laytimePercent: 100 })
+                      }
+                    }}
+                    checked={countsTowardsLaytime[port.id] !== false}
+                  />
                 </Form.Item>
                 <Form.Item
                   name="laytimePercent"
@@ -235,7 +255,14 @@ export default function PortForm({ onPortsChange, initialPorts }: PortFormProps)
                   initialValue={100}
                   rules={[{ required: true, message: 'Enter %' }]}
                 >
-                  <Input type="number" min={0} max={100} step={1} suffix="%" />
+                  <Input
+                    type="number"
+                    min={0}
+                    max={100}
+                    step={1}
+                    suffix="%"
+                    disabled={countsTowardsLaytime[port.id] === false}
+                  />
                 </Form.Item>
               </Space>
               <Form.Item className="!mb-0">

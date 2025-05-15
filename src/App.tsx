@@ -39,7 +39,11 @@ function App() {
         <main className="flex-1 max-w-5xl mx-auto w-full px-4 py-8">
           <div className="card-panel">
             {activeTab === 'new' ? (
-              <EventForm initialCalculation={selectedCalculation} onClearCalculation={() => setSelectedCalculation(undefined)} />
+              <EventForm 
+                initialCalculation={selectedCalculation} 
+                onClearCalculation={() => setSelectedCalculation(undefined)}
+                onSaved={() => setActiveTab('saved')}
+              />
             ) : (
               <SavedCalculations onOpenCalculation={calc => { setSelectedCalculation(calc); setActiveTab('new') }} />
             )}

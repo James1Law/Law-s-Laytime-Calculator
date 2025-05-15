@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import { Button, Form, InputNumber, Space, Typography, Tooltip, DatePicker, Input } from 'antd'
+import { Button, Form, InputNumber, Space, Typography, Tooltip, DatePicker, Input, message } from 'antd'
 import { PDFDownloadLink, Document, Page, Text, View, StyleSheet } from '@react-pdf/renderer'
 import dayjs from 'dayjs'
 import PortForm from './PortForm'
@@ -22,11 +22,12 @@ const styles = StyleSheet.create({
     color: '#1e293b',
   },
   table: {
-    width: 'auto',
+    width: 400,
     marginBottom: 16,
     borderStyle: 'solid',
     borderWidth: 1,
     borderColor: '#e5e7eb',
+    alignSelf: 'flex-start',
   },
   tableRow: {
     flexDirection: 'row',
@@ -41,12 +42,54 @@ const styles = StyleSheet.create({
     borderRightColor: '#e5e7eb',
     borderBottomWidth: 1,
     borderBottomColor: '#e5e7eb',
-    minWidth: 80,
+    fontSize: 12,
+    width: 140,
+    textAlign: 'left',
+  },
+  tableCellValue: {
+    padding: 6,
+    borderBottomWidth: 1,
+    borderBottomColor: '#e5e7eb',
+    fontSize: 12,
+    width: 260,
+    textAlign: 'left',
+  },
+  tableCellLastRow: {
+    borderBottomWidth: 0,
+  },
+  tableCellNoRight: {
+    borderRightWidth: 0,
+  },
+  eventsTable: {
+    width: 'auto',
+    marginBottom: 24,
+    borderStyle: 'solid',
+    borderWidth: 1,
+    borderColor: '#e5e7eb',
+  },
+  eventsTableHeader: {
+    backgroundColor: '#f1f5f9',
+    fontWeight: 'bold',
+  },
+  eventsTableCell: {
+    padding: 6,
+    borderRightWidth: 1,
+    borderRightColor: '#e5e7eb',
+    borderBottomWidth: 1,
+    borderBottomColor: '#e5e7eb',
+    fontSize: 10,
+  },
+  portHeader: {
+    fontSize: 14,
+    fontWeight: 'bold',
+    marginTop: 24,
+    marginBottom: 8,
+    color: '#1e293b',
   },
   summary: {
     marginTop: 12,
     padding: 10,
-    backgroundColor: '#f8fafc',
+    backgroundColor: '#fff',
     borderRadius: 6,
     border: '1px solid #e5e7eb',
   },
@@ -66,86 +109,164 @@ const styles = StyleSheet.create({
     color: '#dc2626',
     fontWeight: 'bold',
   },
+  infoSection: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    marginBottom: 16,
+  },
+  infoText: {
+    fontSize: 12,
+    color: '#64748b',
+  },
+  deductionsTable: {
+    width: 'auto',
+    marginBottom: 24,
+    borderStyle: 'solid',
+    borderWidth: 1,
+    borderColor: '#e5e7eb',
+  },
+  deductionsHeader: {
+    fontSize: 12,
+    fontWeight: 'bold',
+    marginTop: 16,
+    marginBottom: 8,
+    color: '#1e293b',
+  },
 })
 
-function LaytimePDF({ ports, allowedLaytime, demurrageRate: _demurrageRate, laytimeUsed, remainingLaytime, demurrageCost }: {
+function LaytimePDF({ ports, allowedLaytime, demurrageRate: _demurrageRate, laytimeUsed, remainingLaytime, demurrageCost, vesselName, owner, charterer, cargoName, voyageNo, cpDate, blDate }: {
   ports: Port[]
   allowedLaytime: number
   demurrageRate: number
   laytimeUsed: number
   remainingLaytime: number
   demurrageCost: number
+  vesselName?: string
+  owner?: string
+  charterer?: string
+  cargoName?: string
+  voyageNo?: string
+  cpDate?: string
+  blDate?: string
 }) {
+  const refNo = `LT-${Date.now().toString().slice(-6)}`
+  const today = dayjs().format('DD MMM YY')
+
+  // Prepare summary fields for easier rendering
+  const summaryFields = [
+    { label: 'Vessel Name', value: vesselName || '-' },
+    { label: 'Owner', value: owner || '-' },
+    { label: 'Charterer', value: charterer || '-' },
+    { label: 'Cargo Name', value: cargoName || '-' },
+    { label: 'Voyage No.', value: voyageNo || '-' },
+    { label: 'B/L Date', value: blDate ? dayjs(blDate).format('DD MMM YY') : '-' },
+    { label: 'CP Date', value: cpDate ? dayjs(cpDate).format('DD MMM YY') : '-' },
+    { label: 'Laytime Allowed', value: `${allowedLaytime.toFixed(2)} hours` },
+    { label: 'Total Laytime Used', value: `${laytimeUsed.toFixed(2)} hours` },
+    { label: 'Demurrage Rate', value: `$${_demurrageRate.toFixed(2)}/day` },
+    { label: 'Demurrage Cost', value: `$${demurrageCost.toFixed(2)}`, isDemurrage: demurrageCost > 0 },
+  ]
+
   return (
     <Document>
       <Page size="A4" style={styles.page}>
         <Text style={styles.header}>Laytime Calculation Report</Text>
+        
+        <View style={styles.infoSection}>
+          <Text style={styles.infoText}>Ref. No.: {refNo}</Text>
+          <Text style={styles.infoText}>Ref. Date: {today}</Text>
+        </View>
+
+        <View style={styles.table}>
+          <View style={[styles.tableRow, styles.tableHeader]}>
+            <Text style={styles.tableCell}>Field</Text>
+            <Text style={[styles.tableCellValue, styles.tableCellNoRight]}>Value</Text>
+          </View>
+          {summaryFields.map((field, idx) => (
+            <View style={styles.tableRow} key={field.label}>
+              <Text style={[
+                styles.tableCell,
+                (idx === summaryFields.length - 1 ? styles.tableCellLastRow : {}),
+              ]}>{field.label}</Text>
+              <Text style={[
+                styles.tableCellValue,
+                styles.tableCellNoRight,
+                (idx === summaryFields.length - 1 ? styles.tableCellLastRow : {}),
+                (field.isDemurrage ? styles.demurrage : {}),
+              ]}>
+                {field.value}
+              </Text>
+            </View>
+          ))}
+        </View>
+
+        {/* Port Events Tables */}
         {ports.map(port => (
-          <View key={port.id} style={styles.table}>
-            <View style={[styles.tableRow, styles.tableHeader]}>
-              <Text style={styles.tableCell}>Port: {port.name} ({port.type})</Text>
-            </View>
-            <View style={[styles.tableRow, styles.tableHeader]}>
-              <Text style={styles.tableCell}>Start Date</Text>
-              <Text style={styles.tableCell}>Day</Text>
-              <Text style={styles.tableCell}>Start Time</Text>
-              <Text style={styles.tableCell}>End Date</Text>
-              <Text style={styles.tableCell}>End Time</Text>
-              <Text style={styles.tableCell}>Description</Text>
-              <Text style={styles.tableCell}>Counts</Text>
-              <Text style={styles.tableCell}>Laytime %</Text>
-              <Text style={styles.tableCell}>Duration (hrs)</Text>
-            </View>
-            {port.events.map(event => (
-              <View style={styles.tableRow} key={event.id}>
-                <Text style={styles.tableCell}>{dayjs(event.startDate).format('DD-MMM-YYYY')}</Text>
-                <Text style={styles.tableCell}>{dayjs(event.startDate).format('dddd')}</Text>
-                <Text style={styles.tableCell}>{event.startTime}</Text>
-                <Text style={styles.tableCell}>{dayjs(event.endDate).format('DD-MMM-YYYY')}</Text>
-                <Text style={styles.tableCell}>{event.endTime}</Text>
-                <Text style={styles.tableCell}>{event.description}</Text>
-                <Text style={styles.tableCell}>{event.counts ? 'Yes' : 'No'}</Text>
-                <Text style={styles.tableCell}>{event.laytimePercent}%</Text>
-                <Text style={styles.tableCell}>{typeof event.calculatedDuration === 'number' ? event.calculatedDuration.toFixed(2) : '-'}</Text>
+          <View key={port.id}>
+            <Text style={styles.portHeader}>
+              {port.name} ({port.type === 'loading' ? 'Loading' : 'Discharging'})
+            </Text>
+            <View style={styles.eventsTable}>
+              <View style={[styles.tableRow, styles.eventsTableHeader]}>
+                <Text style={[styles.eventsTableCell, { width: '15%' }]}>Date</Text>
+                <Text style={[styles.eventsTableCell, { width: '10%' }]}>Day</Text>
+                <Text style={[styles.eventsTableCell, { width: '10%' }]}>Time</Text>
+                <Text style={[styles.eventsTableCell, { width: '35%' }]}>Event</Text>
+                <Text style={[styles.eventsTableCell, { width: '10%' }]}>Counts</Text>
+                <Text style={[styles.eventsTableCell, { width: '10%' }]}>Laytime</Text>
+                <Text style={[styles.eventsTableCell, { width: '10%' }]}>Demurrage</Text>
               </View>
-            ))}
-            {/* Deductions Table */}
-            {(port.deductions && port.deductions.length > 0) && (
-              <>
-                <View style={[styles.tableRow, styles.tableHeader]}>
-                  <Text style={styles.tableCell}>Deduction Description</Text>
-                  <Text style={styles.tableCell}>Duration (hrs)</Text>
+              {port.events.map(event => (
+                <View style={styles.tableRow} key={event.id}>
+                  <Text style={[styles.eventsTableCell, { width: '15%' }]}>
+                    {dayjs(event.startDate).format('DD MMM YY')}
+                  </Text>
+                  <Text style={[styles.eventsTableCell, { width: '10%' }]}>
+                    {dayjs(event.startDate).format('ddd')}
+                  </Text>
+                  <Text style={[styles.eventsTableCell, { width: '10%' }]}>
+                    {event.startTime}
+                  </Text>
+                  <Text style={[styles.eventsTableCell, { width: '35%' }]}>
+                    {event.description}
+                  </Text>
+                  <Text style={[styles.eventsTableCell, { width: '10%' }]}>
+                    {event.counts ? 'Yes' : 'No'}
+                  </Text>
+                  <Text style={[styles.eventsTableCell, { width: '10%' }]}>
+                    {event.counts ? `${event.laytimePercent}%` : '0%'}
+                  </Text>
+                  <Text style={[styles.eventsTableCell, { width: '10%' }]}>
+                    {event.counts && typeof event.calculatedDuration === 'number' && event.calculatedDuration > 0 ? 'Yes' : 'No'}
+                  </Text>
                 </View>
-                {port.deductions.map(deduction => (
-                  <View style={styles.tableRow} key={deduction.id}>
-                    <Text style={styles.tableCell}>{deduction.description}</Text>
-                    <Text style={styles.tableCell}>{deduction.durationHours.toFixed(2)}</Text>
+              ))}
+            </View>
+
+            {/* Deductions Table */}
+            {port.deductions && port.deductions.length > 0 && (
+              <>
+                <Text style={styles.deductionsHeader}>Deductions</Text>
+                <View style={styles.deductionsTable}>
+                  <View style={[styles.tableRow, styles.eventsTableHeader]}>
+                    <Text style={[styles.eventsTableCell, { width: '70%' }]}>Description</Text>
+                    <Text style={[styles.eventsTableCell, { width: '30%' }]}>Duration (hours)</Text>
                   </View>
-                ))}
+                  {port.deductions.map(deduction => (
+                    <View style={styles.tableRow} key={deduction.id}>
+                      <Text style={[styles.eventsTableCell, { width: '70%' }]}>
+                        {deduction.description}
+                      </Text>
+                      <Text style={[styles.eventsTableCell, { width: '30%' }]}>
+                        {deduction.durationHours.toFixed(2)}
+                      </Text>
+                    </View>
+                  ))}
+                </View>
               </>
             )}
           </View>
         ))}
-        <View style={styles.summary}>
-          <View style={styles.summaryRow}>
-            <Text style={styles.label}>Total Laytime Used:</Text>
-            <Text style={styles.value}>{laytimeUsed.toFixed(2)} hours</Text>
-          </View>
-          <View style={styles.summaryRow}>
-            <Text style={styles.label}>Allowed Laytime:</Text>
-            <Text style={styles.value}>{allowedLaytime.toFixed(2)} hours</Text>
-          </View>
-          <View style={styles.summaryRow}>
-            <Text style={styles.label}>Remaining Laytime:</Text>
-            <Text style={styles.value}>{remainingLaytime.toFixed(2)} hours</Text>
-          </View>
-          <View style={styles.summaryRow}>
-            <Text style={styles.label}>Demurrage Cost:</Text>
-            <Text style={demurrageCost > 0 ? styles.demurrage : styles.value}>
-              ${demurrageCost.toFixed(2)}
-            </Text>
-          </View>
-        </View>
       </Page>
     </Document>
   )
@@ -164,7 +285,7 @@ function calculateLaytimeUsed(ports: Port[]): number {
   }, 0)
 }
 
-export default function EventForm({ initialCalculation, onClearCalculation }: { initialCalculation?: LaytimeCalculation, onClearCalculation?: () => void }) {
+export default function EventForm({ initialCalculation, onClearCalculation, onSaved }: { initialCalculation?: LaytimeCalculation, onClearCalculation?: () => void, onSaved?: () => void }) {
   const [ports, setPorts] = useState<Port[]>(initialCalculation?.ports || [])
   const [allowedLaytime, setAllowedLaytime] = useState(initialCalculation?.allowedLaytime || 0)
   const [demurrageRate, setDemurrageRate] = useState(initialCalculation?.demurrageRate || 0)
@@ -199,6 +320,49 @@ export default function EventForm({ initialCalculation, onClearCalculation }: { 
   const demurrageCost = laytimeUsed > allowedLaytime
     ? (laytimeUsed - allowedLaytime) * demurrageRatePerHour
     : 0
+
+  const handleSave = () => {
+    const calculation: LaytimeCalculation = {
+      id: Date.now().toString(),
+      timestamp: new Date().toISOString(),
+      ports,
+      allowedLaytime,
+      demurrageRate,
+      laytimeUsed,
+      remainingLaytime,
+      demurrageCost,
+      vesselName,
+      owner,
+      charterer,
+      cargoName,
+      voyageNo,
+      cpDate: cpDate ? cpDate.toISOString() : undefined,
+      blDate: blDate ? blDate.toISOString() : undefined,
+    }
+    // Remove old key if present
+    localStorage.removeItem('calculations')
+    let saved: LaytimeCalculation[] = []
+    try {
+      const raw = localStorage.getItem('laytime_calculations')
+      if (raw) saved = JSON.parse(raw)
+      if (!Array.isArray(saved)) saved = []
+    } catch {
+      saved = []
+    }
+    localStorage.setItem('laytime_calculations', JSON.stringify([...saved, calculation]))
+    message.success('Calculation saved successfully')
+    setPorts([])
+    setAllowedLaytime(0)
+    setDemurrageRate(0)
+    setVesselName('')
+    setOwner('')
+    setCharterer('')
+    setCargoName('')
+    setVoyageNo('')
+    setCpDate(null)
+    setBlDate(null)
+    if (onSaved) onSaved();
+  }
 
   return (
     <div className="w-full">
@@ -267,8 +431,8 @@ export default function EventForm({ initialCalculation, onClearCalculation }: { 
 
         <PortForm onPortsChange={setPorts} initialPorts={ports} />
 
-        <div className="card-panel">
-          <div className="section-title">
+        <div className="card-panel" style={{ background: '#fff', boxShadow: '0 4px 24px rgba(0,0,0,0.08)', border: '2px solid #e0e0e0' }}>
+          <div className="section-title" style={{ marginBottom: '1.5rem' }}>
             Summary
           </div>
           <div className="flex flex-col gap-4">
@@ -295,11 +459,6 @@ export default function EventForm({ initialCalculation, onClearCalculation }: { 
         </div>
 
         <Space className="w-full justify-end" size="middle">
-          {initialCalculation && (
-            <Button onClick={onClearCalculation} danger type="default">
-              Clear Loaded Calculation
-            </Button>
-          )}
           <PDFDownloadLink
             document={
               <LaytimePDF
@@ -309,12 +468,25 @@ export default function EventForm({ initialCalculation, onClearCalculation }: { 
                 laytimeUsed={laytimeUsed}
                 remainingLaytime={remainingLaytime}
                 demurrageCost={demurrageCost}
+                vesselName={vesselName}
+                owner={owner}
+                charterer={charterer}
+                cargoName={cargoName}
+                voyageNo={voyageNo}
+                cpDate={cpDate?.toISOString()}
+                blDate={blDate?.toISOString()}
               />
             }
-            fileName="laytime-calculation.pdf"
+            fileName={`laytime-report-${vesselName || 'unnamed'}-${voyageNo || 'novoyage'}.pdf`}
+            className="ant-btn ant-btn-primary ant-btn-lg"
           >
             {({ loading }) => (
-              <Button type="primary" loading={loading} size="large">
+              <Button
+                type="primary"
+                size="large"
+                loading={loading}
+                disabled={loading}
+              >
                 Download PDF
               </Button>
             )}
@@ -322,37 +494,7 @@ export default function EventForm({ initialCalculation, onClearCalculation }: { 
           <Button
             type="primary"
             size="large"
-            onClick={() => {
-              const calculation: LaytimeCalculation = {
-                id: Date.now().toString(),
-                timestamp: new Date().toISOString(),
-                ports,
-                allowedLaytime,
-                demurrageRate,
-                laytimeUsed,
-                remainingLaytime,
-                demurrageCost,
-                vesselName,
-                owner,
-                charterer,
-                cargoName,
-                voyageNo,
-                cpDate: cpDate ? cpDate.toISOString() : undefined,
-                blDate: blDate ? blDate.toISOString() : undefined,
-              }
-              const saved = JSON.parse(localStorage.getItem('calculations') || '[]')
-              localStorage.setItem('calculations', JSON.stringify([...saved, calculation]))
-              setPorts([])
-              setAllowedLaytime(0)
-              setDemurrageRate(0)
-              setVesselName('')
-              setOwner('')
-              setCharterer('')
-              setCargoName('')
-              setVoyageNo('')
-              setCpDate(null)
-              setBlDate(null)
-            }}
+            onClick={handleSave}
           >
             Save Calculation
           </Button>
