@@ -57,19 +57,25 @@
   }
 }
 
+/* Ant Design Layout overrides */
+.ant-layout {
+  background: var(--background) !important;
+}
+
+.ant-layout-sider {
+  background: #1c2536 !important;
+  box-shadow: 2px 0 8px rgba(0,0,0,0.04);
+}
+
+.ant-layout-content {
+  background: var(--background) !important;
+}
+
 /* Sidebar styles */
 .sidebar {
-  background: #1c2536;
   color: #fff;
-  min-width: 220px;
-  height: auto;
-  min-height: 100%;
-  display: flex;
-  flex-direction: column;
-  padding: 2rem 0 1rem 0;
-  box-shadow: 2px 0 8px rgba(0,0,0,0.04);
-  flex-shrink: 0;
 }
+
 .sidebar .nav-link {
   color: #b0b8c1;
   font-weight: 500;
@@ -81,11 +87,13 @@
   align-items: center;
   gap: 0.75rem;
 }
+
 .sidebar .nav-link.active {
   color: #1677ff;
   background: #f5f7fa;
   border-left: 4px solid #1677ff;
 }
+
 .sidebar .nav-link:hover {
   color: #1677ff;
   background: #eaf3ff;
@@ -119,6 +127,7 @@
   box-shadow: 0 2px 8px rgba(22,119,255,0.08);
   transition: background 0.2s, border-color 0.2s;
 }
+
 .ant-btn-primary:hover, .ant-btn-primary:focus {
   background: #125fcc !important;
   border-color: #125fcc !important;
@@ -132,10 +141,12 @@
   font-size: 1.08rem;
   padding: 0.75rem 1.5rem;
 }
+
 .ant-tabs-nav .ant-tabs-tab-active {
   color: #1677ff !important;
   font-weight: 700;
 }
+
 .ant-tabs-ink-bar {
   background: #1677ff !important;
   height: 3px !important;
@@ -143,39 +154,57 @@
 }
 
 /* Responsive adjustments */
-@media (max-width: 900px) {
-  .sidebar {
-    min-width: 60px;
-    padding: 1rem 0;
-    height: 100vh;
-  }
-  .sidebar .nav-link {
-    padding: 0.75rem 1rem;
-    font-size: 1rem;
+@media (max-width: 1024px) {
+  .ant-layout-sider {
+    width: 200px !important;
   }
 }
-@media (max-width: 600px) {
-  .sidebar {
+
+@media (max-width: 768px) {
+  .ant-layout-sider {
+    width: 64px !important;
+  }
+  
+  .sidebar .nav-link {
+    padding: 0.75rem 1rem;
+    justify-content: center;
+  }
+  
+  .sidebar .nav-link span {
+    display: none;
+  }
+}
+
+@media (max-width: 640px) {
+  .ant-layout-sider {
     position: fixed;
-    left: 0;
-    top: 0;
-    width: 100vw;
+    bottom: 0;
+    top: auto;
+    width: 100% !important;
     height: 56px;
     flex-direction: row;
-    align-items: center;
-    z-index: 1000;
-    box-shadow: 0 2px 8px rgba(16, 30, 54, 0.08);
+    padding: 0;
+    justify-content: space-around;
   }
+  
   .sidebar .nav-link {
     flex: 1;
     justify-content: center;
     border-left: none;
-    border-bottom: 4px solid transparent;
+    border-top: 4px solid transparent;
     padding: 0.5rem 0;
   }
+  
   .sidebar .nav-link.active {
     border-left: none;
-    border-bottom: 4px solid #1677ff;
-    background: #f5f7fa;
+    border-top: 4px solid #1677ff;
+  }
+  
+  .sidebar .nav-link span {
+    display: none;
+  }
+  
+  .card-panel {
+    padding: 1rem;
   }
 }

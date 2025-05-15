@@ -124,24 +124,22 @@ export default function SavedCalculations({ onOpenCalculation }: SavedCalculatio
 
   return (
     <div className="w-full">
-      <div className="card-panel" style={{ maxWidth: '100%', overflow: 'hidden' }}>
-        <div className="section-title mb-6">Saved Calculations</div>
-        {saved.length === 0 ? (
-          <div className="text-zinc-500">No saved calculations.</div>
-        ) : (
-          <div style={{ width: '100%', overflow: 'hidden' }}>
-            <Table
-              dataSource={saved}
-              columns={columns}
-              rowKey="id"
-              scroll={{ x: 'max-content' }}
-              pagination={false}
-              size="middle"
-              style={{ width: '100%' }}
-            />
-          </div>
-        )}
-      </div>
+      <div className="section-title mb-6">Saved Calculations</div>
+      {saved.length === 0 ? (
+        <div className="text-zinc-500">No saved calculations.</div>
+      ) : (
+        <div className="w-full">
+          <Table
+            dataSource={saved}
+            columns={columns}
+            rowKey="id"
+            scroll={{ x: 'max-content' }}
+            pagination={false}
+            size="middle"
+            className="w-full"
+          />
+        </div>
+      )}
     </div>
   )
 } 
