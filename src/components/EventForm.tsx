@@ -385,7 +385,7 @@ function calculateLaytimeUsed(ports: Port[]): number {
   }, 0)
 }
 
-export default function EventForm({ initialCalculation, onClearCalculation, onSaved }: { initialCalculation?: LaytimeCalculation, onClearCalculation?: () => void, onSaved?: () => void }) {
+export default function EventForm({ initialCalculation, onSaved }: { initialCalculation?: LaytimeCalculation, onSaved?: () => void }) {
   const [ports, setPorts] = useState<Port[]>(initialCalculation?.ports || [])
   const [allowedLaytime, setAllowedLaytime] = useState(initialCalculation?.allowedLaytime || 0)
   const [demurrageRate, setDemurrageRate] = useState(initialCalculation?.demurrageRate || 0)

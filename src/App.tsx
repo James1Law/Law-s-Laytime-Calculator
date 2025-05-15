@@ -13,7 +13,6 @@ function AppContent() {
 
   const isNewCalculation = location.pathname === '/new-calculation'
   const isSavedCalculations = location.pathname === '/saved-calculations'
-  const isCalculationView = location.pathname.startsWith('/calculation-')
 
   return (
     <div className="flex min-h-screen bg-background">

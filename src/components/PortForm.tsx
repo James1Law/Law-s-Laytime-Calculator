@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from 'react'
+import { useState, useEffect } from 'react'
 import { Button, Input, Form, Select, Space, Typography, Divider, Switch, DatePicker, TimePicker, Table } from 'antd'
 import { PlusOutlined, DeleteOutlined } from '@ant-design/icons'
 import type { Port, PortEvent, Deduction } from '../types/laytime'
