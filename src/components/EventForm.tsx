@@ -98,10 +98,10 @@ function LaytimePDF({ ports, allowedLaytime, demurrageRate: _demurrageRate, layt
             </View>
             {port.events.map(event => (
               <View style={styles.tableRow} key={event.id}>
-                <Text style={styles.tableCell}>{event.startDate}</Text>
+                <Text style={styles.tableCell}>{dayjs(event.startDate).format('DD-MMM-YYYY')}</Text>
                 <Text style={styles.tableCell}>{dayjs(event.startDate).format('dddd')}</Text>
                 <Text style={styles.tableCell}>{event.startTime}</Text>
-                <Text style={styles.tableCell}>{event.endDate}</Text>
+                <Text style={styles.tableCell}>{dayjs(event.endDate).format('DD-MMM-YYYY')}</Text>
                 <Text style={styles.tableCell}>{event.endTime}</Text>
                 <Text style={styles.tableCell}>{event.description}</Text>
                 <Text style={styles.tableCell}>{event.counts ? 'Yes' : 'No'}</Text>
@@ -185,122 +185,120 @@ export default function EventForm({ initialCalculation, onClearCalculation }: { 
     : 0
 
   return (
-    <div className="flex flex-col items-center min-h-screen bg-zinc-50 dark:bg-zinc-900 py-10">
-      <Card className="w-full max-w-4xl">
-        <Space direction="vertical" size="large" className="w-full">
-          <Card>
-            <Typography.Title level={4} className="!mb-6 flex items-center gap-2">
-              Laytime Settings
-              <Tooltip title="Details as per charterparty">
-                <InfoCircleOutlined style={{ fontSize: 12, color: '#64748b', cursor: 'pointer', marginLeft: 6, transform: 'translateY(-3px)' }} />
-              </Tooltip>
-            </Typography.Title>
-            <Space direction="horizontal" size="middle" className="w-full">
-              <Form layout="vertical" className="w-full flex flex-row gap-4">
-                <Form.Item label="Allowed Laytime (hours)" className="flex-1 !mb-0">
-                  <InputNumber
-                    value={allowedLaytime}
-                    onChange={value => setAllowedLaytime(Number(value))}
-                    min={0}
-                    className="w-full"
-                    size="large"
-                    placeholder="Allowed Laytime (hours)"
-                  />
-                </Form.Item>
-                <Form.Item label="Demurrage Rate (USD/day)" className="flex-1 !mb-0">
-                  <InputNumber
-                    value={demurrageRate}
-                    onChange={value => setDemurrageRate(Number(value))}
-                    min={0}
-                    className="w-full"
-                    size="large"
-                    placeholder="Demurrage Rate (USD/day)"
-                  />
-                </Form.Item>
-              </Form>
-            </Space>
-          </Card>
+    <div className="w-full">
+      <div className="card-panel">
+        <div className="card-panel" style={{ marginBottom: 0, boxShadow: 'none', border: 'none', padding: 0 }}>
+          <div className="section-title flex items-center gap-2">
+            Laytime Settings
+            <Tooltip title="Details as per charterparty">
+              <InfoCircleOutlined style={{ fontSize: 12, color: '#64748b', cursor: 'pointer', marginLeft: 6, transform: 'translateY(-3px)' }} />
+            </Tooltip>
+          </div>
+          <div className="flex flex-row gap-4">
+            <Form layout="vertical" className="w-full flex flex-row gap-4">
+              <Form.Item label="Allowed Laytime (hours)" className="flex-1 !mb-0">
+                <InputNumber
+                  value={allowedLaytime}
+                  onChange={value => setAllowedLaytime(Number(value))}
+                  min={0}
+                  className="w-full"
+                  size="large"
+                  placeholder="Allowed Laytime (hours)"
+                />
+              </Form.Item>
+              <Form.Item label="Demurrage Rate (USD/day)" className="flex-1 !mb-0">
+                <InputNumber
+                  value={demurrageRate}
+                  onChange={value => setDemurrageRate(Number(value))}
+                  min={0}
+                  className="w-full"
+                  size="large"
+                  placeholder="Demurrage Rate (USD/day)"
+                />
+              </Form.Item>
+            </Form>
+          </div>
+        </div>
 
-          <PortForm onPortsChange={setPorts} initialPorts={ports} />
+        <PortForm onPortsChange={setPorts} initialPorts={ports} />
 
-          <Card>
-            <Typography.Title level={4} className="!mb-6">
-              Summary
-            </Typography.Title>
-            <Space direction="vertical" size="middle" className="w-full">
-              <Typography.Text>
-                <Typography.Text strong>Total Laytime Used:</Typography.Text>{' '}
-                {laytimeUsed.toFixed(2)} hours
+        <div className="card-panel">
+          <div className="section-title">
+            Summary
+          </div>
+          <div className="flex flex-col gap-4">
+            <Typography.Text>
+              <Typography.Text strong>Total Laytime Used:</Typography.Text>{' '}
+              {laytimeUsed.toFixed(2)} hours
+            </Typography.Text>
+            <Typography.Text>
+              <Typography.Text strong>Remaining Laytime:</Typography.Text>{' '}
+              {remainingLaytime.toFixed(2)} hours
+            </Typography.Text>
+            <Typography.Text>
+              <Typography.Text strong>Demurrage Cost:</Typography.Text>{' '}
+              <Typography.Text type={demurrageCost > 0 ? 'danger' : undefined} strong>
+                ${demurrageCost.toFixed(2)}
               </Typography.Text>
-              <Typography.Text>
-                <Typography.Text strong>Remaining Laytime:</Typography.Text>{' '}
-                {remainingLaytime.toFixed(2)} hours
-              </Typography.Text>
-              <Typography.Text>
-                <Typography.Text strong>Demurrage Cost:</Typography.Text>{' '}
-                <Typography.Text type={demurrageCost > 0 ? 'danger' : undefined} strong>
-                  ${demurrageCost.toFixed(2)}
+              {demurrageRate > 0 && (
+                <Typography.Text type="secondary" className="ml-2">
+                  (at ${demurrageRate.toFixed(2)}/day)
                 </Typography.Text>
-                {demurrageRate > 0 && (
-                  <Typography.Text type="secondary" className="ml-2">
-                    (at ${demurrageRate.toFixed(2)}/day)
-                  </Typography.Text>
-                )}
-              </Typography.Text>
-            </Space>
-          </Card>
+              )}
+            </Typography.Text>
+          </div>
+        </div>
 
-          <Space className="w-full justify-end" size="middle">
-            {initialCalculation && (
-              <Button onClick={onClearCalculation} danger type="default">
-                Clear Loaded Calculation
+        <Space className="w-full justify-end" size="middle">
+          {initialCalculation && (
+            <Button onClick={onClearCalculation} danger type="default">
+              Clear Loaded Calculation
+            </Button>
+          )}
+          <PDFDownloadLink
+            document={
+              <LaytimePDF
+                ports={ports}
+                allowedLaytime={allowedLaytime}
+                demurrageRate={demurrageRate}
+                laytimeUsed={laytimeUsed}
+                remainingLaytime={remainingLaytime}
+                demurrageCost={demurrageCost}
+              />
+            }
+            fileName="laytime-calculation.pdf"
+          >
+            {({ loading }) => (
+              <Button type="primary" loading={loading} size="large">
+                Download PDF
               </Button>
             )}
-            <PDFDownloadLink
-              document={
-                <LaytimePDF
-                  ports={ports}
-                  allowedLaytime={allowedLaytime}
-                  demurrageRate={demurrageRate}
-                  laytimeUsed={laytimeUsed}
-                  remainingLaytime={remainingLaytime}
-                  demurrageCost={demurrageCost}
-                />
+          </PDFDownloadLink>
+          <Button
+            type="primary"
+            size="large"
+            onClick={() => {
+              const calculation: LaytimeCalculation = {
+                id: Date.now().toString(),
+                timestamp: new Date().toISOString(),
+                ports,
+                allowedLaytime,
+                demurrageRate,
+                laytimeUsed,
+                remainingLaytime,
+                demurrageCost,
               }
-              fileName="laytime-calculation.pdf"
-            >
-              {({ loading }) => (
-                <Button type="primary" loading={loading} size="large">
-                  Download PDF
-                </Button>
-              )}
-            </PDFDownloadLink>
-            <Button
-              type="primary"
-              size="large"
-              onClick={() => {
-                const calculation: LaytimeCalculation = {
-                  id: Date.now().toString(),
-                  timestamp: new Date().toISOString(),
-                  ports,
-                  allowedLaytime,
-                  demurrageRate,
-                  laytimeUsed,
-                  remainingLaytime,
-                  demurrageCost,
-                }
-                const saved = JSON.parse(localStorage.getItem('calculations') || '[]')
-                localStorage.setItem('calculations', JSON.stringify([...saved, calculation]))
-                setPorts([])
-                setAllowedLaytime(0)
-                setDemurrageRate(0)
-              }}
-            >
-              Save Calculation
-            </Button>
-          </Space>
+              const saved = JSON.parse(localStorage.getItem('calculations') || '[]')
+              localStorage.setItem('calculations', JSON.stringify([...saved, calculation]))
+              setPorts([])
+              setAllowedLaytime(0)
+              setDemurrageRate(0)
+            }}
+          >
+            Save Calculation
+          </Button>
         </Space>
-      </Card>
+      </div>
     </div>
   )
 }

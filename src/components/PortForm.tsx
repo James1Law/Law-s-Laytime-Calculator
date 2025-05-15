@@ -54,10 +54,10 @@ export default function PortForm({ onPortsChange, initialPorts }: PortFormProps)
   }
 
   const eventColumns = [
-    { title: 'Start Date', dataIndex: 'startDate', key: 'startDate' },
+    { title: 'Start Date', dataIndex: 'startDate', key: 'startDate', render: (date: string) => dayjs(date).format('DD-MMM-YYYY') },
     { title: 'Day', dataIndex: 'startDate', key: 'day', render: (date: string) => getDayOfWeek(date) },
     { title: 'Start Time', dataIndex: 'startTime', key: 'startTime' },
-    { title: 'End Date', dataIndex: 'endDate', key: 'endDate' },
+    { title: 'End Date', dataIndex: 'endDate', key: 'endDate', render: (date: string) => dayjs(date).format('DD-MMM-YYYY') },
     { title: 'End Time', dataIndex: 'endTime', key: 'endTime' },
     { title: 'Description', dataIndex: 'description', key: 'description' },
     { title: 'Counts', dataIndex: 'counts', key: 'counts', render: (counts: boolean) => (counts ? 'Yes' : 'No') },
@@ -124,17 +124,15 @@ export default function PortForm({ onPortsChange, initialPorts }: PortFormProps)
 
   return (
     <div className="space-y-6">
-      <Card>
-        <Typography.Title level={4} className="!mb-6">
-          Add Port
-        </Typography.Title>
+      <div className="card-panel">
+        <div className="section-title">Add Port</div>
         <Form
           form={form}
           onFinish={handleAddPort}
           layout="vertical"
           size="large"
         >
-          <Space direction="horizontal" size="middle" className="w-full">
+          <div className="flex flex-row gap-4 items-end">
             <Form.Item
               name="name"
               label="Port Name"
@@ -156,33 +154,28 @@ export default function PortForm({ onPortsChange, initialPorts }: PortFormProps)
                 ]}
               />
             </Form.Item>
-            <Form.Item className="!mb-0 !mt-8">
-              <Button type="primary" htmlType="submit" icon={<PlusOutlined />}>
+            <Form.Item className="!mb-0 flex items-end" style={{ minWidth: 130 }}>
+              <Button type="primary" htmlType="submit" icon={<PlusOutlined />} block>
                 Add Port
               </Button>
             </Form.Item>
-          </Space>
+          </div>
         </Form>
-      </Card>
+      </div>
 
       {ports.map(port => (
-        <Card
-          key={port.id}
-          title={
-            <Space>
-              <Typography.Text strong>{port.name}</Typography.Text>
-              <Typography.Text type="secondary">({port.type})</Typography.Text>
-            </Space>
-          }
-          extra={
+        <div key={port.id} className="card-panel">
+          <div className="section-title flex items-center gap-2 mb-4">
+            <span>{port.name}</span>
+            <span className="text-sm font-normal text-gray-500">({port.type})</span>
             <Button
               type="text"
               danger
               icon={<DeleteOutlined />}
               onClick={() => handleRemovePort(port.id)}
+              style={{ marginLeft: 'auto' }}
             />
-          }
-        >
+          </div>
           <div className="space-y-4">
             <Form
               onFinish={(values) => handleAddEvent(port.id, values)}
@@ -190,27 +183,14 @@ export default function PortForm({ onPortsChange, initialPorts }: PortFormProps)
               size="large"
               initialValues={{ counts: true, laytimePercent: 100 }}
             >
-              <Space direction="horizontal" size="middle" className="w-full">
+              <div className="flex flex-row gap-4">
                 <Form.Item
                   name="startDate"
                   label="Start Date"
                   rules={[{ required: true, message: 'Please select start date' }]}
                   className="flex-1 !mb-0"
                 >
-                  <DatePicker className="w-full" />
-                </Form.Item>
-                <Form.Item
-                  shouldUpdate={(prev, curr) => prev.startDate !== curr.startDate}
-                  noStyle
-                >
-                  {({ getFieldValue }) => (
-                    <Form.Item label="Day" className="flex-1 !mb-0">
-                      <Input
-                        value={getDayOfWeek(getFieldValue('startDate')?.format('YYYY-MM-DD'))}
-                        disabled
-                      />
-                    </Form.Item>
-                  )}
+                  <DatePicker className="w-full" format="DD-MMM-YYYY" />
                 </Form.Item>
                 <Form.Item
                   name="startTime"
@@ -226,7 +206,7 @@ export default function PortForm({ onPortsChange, initialPorts }: PortFormProps)
                   rules={[{ required: true, message: 'Please select end date' }]}
                   className="flex-1 !mb-0"
                 >
-                  <DatePicker className="w-full" />
+                  <DatePicker className="w-full" format="DD-MMM-YYYY" />
                 </Form.Item>
                 <Form.Item
                   name="endTime"
@@ -236,7 +216,7 @@ export default function PortForm({ onPortsChange, initialPorts }: PortFormProps)
                 >
                   <TimePicker className="w-full" format="HH:mm" />
                 </Form.Item>
-              </Space>
+              </div>
               <Form.Item
                 name="description"
                 label="Description"
@@ -304,7 +284,7 @@ export default function PortForm({ onPortsChange, initialPorts }: PortFormProps)
               size="small"
             />
           </div>
-        </Card>
+        </div>
       ))}
     </div>
   )

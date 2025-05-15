@@ -10,29 +10,43 @@ function App() {
   const [activeTab, setActiveTab] = useState('new')
 
   return (
-    <div className="min-h-screen bg-background">
-      <nav className="border-b">
-        <div className="container mx-auto px-4 py-4">
-          <div className="flex items-center justify-between">
-            <h1 className="text-2xl font-bold">Law's Laytime Calculator</h1>
+    <div className="flex min-h-screen bg-background">
+      {/* Sidebar */}
+      <aside className="sidebar">
+        <nav className="flex flex-col gap-2">
+          <a
+            href="#"
+            className={`nav-link${activeTab === 'new' ? ' active' : ''}`}
+            onClick={e => { e.preventDefault(); setActiveTab('new') }}
+          >
+            New Calculation
+          </a>
+          <a
+            href="#"
+            className={`nav-link${activeTab === 'saved' ? ' active' : ''}`}
+            onClick={e => { e.preventDefault(); setActiveTab('saved') }}
+          >
+            Saved Calculations
+          </a>
+        </nav>
+      </aside>
+      {/* Main Content */}
+      <div className="flex-1 flex flex-col items-stretch min-h-screen">
+        <header className="bg-white">
+          <div className="max-w-5xl mx-auto px-6 py-4">
+            <h1 className="text-lg font-bold" style={{ color: '#1c1c1c', fontWeight: 700, letterSpacing: 0.5 }}>{"Law's Laytime Calculator"}</h1>
           </div>
-        </div>
-      </nav>
-      <main className="container mx-auto px-4 py-8">
-        <Tabs
-          activeKey={activeTab}
-          onChange={key => setActiveTab(key)}
-          items={[{
-            key: 'new',
-            label: 'New Calculation',
-            children: <EventForm initialCalculation={selectedCalculation} onClearCalculation={() => setSelectedCalculation(undefined)} />
-          }, {
-            key: 'saved',
-            label: 'Saved Calculations',
-            children: <SavedCalculations onOpenCalculation={calc => { setSelectedCalculation(calc); setActiveTab('new') }} />
-          }]}
-        />
-      </main>
+        </header>
+        <main className="flex-1 max-w-5xl mx-auto w-full px-4 py-8">
+          <div className="card-panel">
+            {activeTab === 'new' ? (
+              <EventForm initialCalculation={selectedCalculation} onClearCalculation={() => setSelectedCalculation(undefined)} />
+            ) : (
+              <SavedCalculations onOpenCalculation={calc => { setSelectedCalculation(calc); setActiveTab('new') }} />
+            )}
+          </div>
+        </main>
+      </div>
     </div>
   )
 }
