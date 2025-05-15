@@ -197,12 +197,11 @@ const styles = StyleSheet.create({
   },
 })
 
-function LaytimePDF({ ports, allowedLaytime, demurrageRate: _demurrageRate, laytimeUsed, remainingLaytime, demurrageCost, vesselName, owner, charterer, cargoName, voyageNo, cpDate, blDate }: {
+function LaytimePDF({ ports, allowedLaytime, demurrageRate: _demurrageRate, laytimeUsed, demurrageCost, vesselName, owner, charterer, cargoName, voyageNo, cpDate, blDate }: {
   ports: Port[]
   allowedLaytime: number
   demurrageRate: number
   laytimeUsed: number
-  remainingLaytime: number
   demurrageCost: number
   vesselName?: string
   owner?: string
@@ -564,7 +563,6 @@ export default function EventForm({ initialCalculation, onSaved }: { initialCalc
                 allowedLaytime={allowedLaytime}
                 demurrageRate={demurrageRate}
                 laytimeUsed={laytimeUsed}
-                remainingLaytime={0}
                 demurrageCost={demurrageCost}
                 vesselName={vesselName}
                 owner={owner}
