@@ -1,12 +1,19 @@
 import { useState } from 'react'
+import { BrowserRouter as Router, Routes, Route, useNavigate, useLocation } from 'react-router-dom'
 import EventForm from './components/EventForm'
 import SavedCalculations from './components/SavedCalculations'
+import LandingPage from './components/LandingPage'
 import type { LaytimeCalculation } from './types/laytime'
 import './App.css'
 
-function App() {
+function AppContent() {
   const [selectedCalculation, setSelectedCalculation] = useState<LaytimeCalculation | undefined>(undefined)
-  const [activeTab, setActiveTab] = useState('new')
+  const navigate = useNavigate()
+  const location = useLocation()
+
+  const isNewCalculation = location.pathname === '/new-calculation'
+  const isSavedCalculations = location.pathname === '/saved-calculations'
+  const isCalculationView = location.pathname.startsWith('/calculation-')
 
   return (
     <div className="flex min-h-screen bg-background">
@@ -14,16 +21,23 @@ function App() {
       <aside className="sidebar">
         <nav className="flex flex-col gap-2">
           <a
-            href="#"
-            className={`nav-link${activeTab === 'new' ? ' active' : ''}`}
-            onClick={e => { e.preventDefault(); setActiveTab('new') }}
+            href="/"
+            className={`nav-link${location.pathname === '/' ? ' active' : ''}`}
+            onClick={e => { e.preventDefault(); navigate('/') }}
+          >
+            Home
+          </a>
+          <a
+            href="/new-calculation"
+            className={`nav-link${isNewCalculation ? ' active' : ''}`}
+            onClick={e => { e.preventDefault(); navigate('/new-calculation') }}
           >
             New Calculation
           </a>
           <a
-            href="#"
-            className={`nav-link${activeTab === 'saved' ? ' active' : ''}`}
-            onClick={e => { e.preventDefault(); setActiveTab('saved') }}
+            href="/saved-calculations"
+            className={`nav-link${isSavedCalculations ? ' active' : ''}`}
+            onClick={e => { e.preventDefault(); navigate('/saved-calculations') }}
           >
             Saved Calculations
           </a>
@@ -37,20 +51,57 @@ function App() {
           </div>
         </header>
         <main className="flex-1 max-w-5xl mx-auto w-full px-4 py-8">
-          <div className="card-panel">
-            {activeTab === 'new' ? (
-              <EventForm 
-                initialCalculation={selectedCalculation} 
-                onClearCalculation={() => setSelectedCalculation(undefined)}
-                onSaved={() => setActiveTab('saved')}
-              />
-            ) : (
-              <SavedCalculations onOpenCalculation={calc => { setSelectedCalculation(calc); setActiveTab('new') }} />
-            )}
-          </div>
+          <Routes>
+            <Route path="/" element={<LandingPage />} />
+            <Route 
+              path="/new-calculation" 
+              element={
+                <div className="card-panel">
+                  <EventForm 
+                    initialCalculation={selectedCalculation} 
+                    onClearCalculation={() => setSelectedCalculation(undefined)}
+                    onSaved={() => navigate('/saved-calculations')}
+                  />
+                </div>
+              } 
+            />
+            <Route 
+              path="/saved-calculations" 
+              element={
+                <div className="card-panel">
+                  <SavedCalculations 
+                    onOpenCalculation={calc => { 
+                      setSelectedCalculation(calc); 
+                      navigate('/new-calculation');
+                    }} 
+                  />
+                </div>
+              } 
+            />
+            <Route 
+              path="/calculation/:id" 
+              element={
+                <div className="card-panel">
+                  <EventForm 
+                    initialCalculation={selectedCalculation} 
+                    onClearCalculation={() => setSelectedCalculation(undefined)}
+                    onSaved={() => navigate('/saved-calculations')}
+                  />
+                </div>
+              } 
+            />
+          </Routes>
         </main>
       </div>
     </div>
+  )
+}
+
+function App() {
+  return (
+    <Router>
+      <AppContent />
+    </Router>
   )
 }
 

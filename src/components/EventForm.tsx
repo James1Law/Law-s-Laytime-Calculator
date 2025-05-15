@@ -5,6 +5,7 @@ import dayjs from 'dayjs'
 import PortForm from './PortForm'
 import type { Port, LaytimeCalculation } from '../types/laytime'
 import { InfoCircleOutlined } from '@ant-design/icons'
+import { useNavigate, useParams } from 'react-router-dom'
 
 // PDF Styles
 const styles = StyleSheet.create({
@@ -132,6 +133,68 @@ const styles = StyleSheet.create({
     marginBottom: 8,
     color: '#1e293b',
   },
+  summaryTable: {
+    width: '100%',
+    marginTop: 32,
+    marginBottom: 16,
+    borderStyle: 'solid',
+    borderWidth: 1,
+    borderColor: '#e5e7eb',
+  },
+  summaryTableRow: {
+    flexDirection: 'row',
+    borderBottomWidth: 1,
+    borderBottomColor: '#e5e7eb',
+  },
+  summaryTableHeader: {
+    backgroundColor: '#f1f5f9',
+    fontWeight: 'bold',
+  },
+  summaryTableCell: {
+    padding: 8,
+    borderRightWidth: 1,
+    borderRightColor: '#e5e7eb',
+    fontSize: 12,
+    flex: 1,
+  },
+  summaryTableCellLast: {
+    borderRightWidth: 0,
+  },
+  summaryTableValue: {
+    fontWeight: 'bold',
+    color: '#0f172a',
+  },
+  summaryTableDemurrage: {
+    color: '#dc2626',
+    fontWeight: 'bold',
+  },
+  tableHeaderCell: {
+    fontSize: 12,
+    fontWeight: 'bold',
+    color: '#1e293b',
+    padding: 8,
+    borderRightWidth: 1,
+    borderRightColor: '#e5e7eb',
+    textAlign: 'left',
+    backgroundColor: '#f1f5f9',
+    flex: 1,
+  },
+  tableHeaderCellLast: {
+    borderRightWidth: 0,
+  },
+  tableValueCell: {
+    fontSize: 12,
+    fontWeight: 'normal',
+    color: '#0f172a',
+    padding: 8,
+    borderRightWidth: 1,
+    borderRightColor: '#e5e7eb',
+    textAlign: 'left',
+    flex: 1,
+  },
+  tableValueCellLast: {
+    borderRightWidth: 0,
+  },
 })
 
 function LaytimePDF({ ports, allowedLaytime, demurrageRate: _demurrageRate, laytimeUsed, remainingLaytime, demurrageCost, vesselName, owner, charterer, cargoName, voyageNo, cpDate, blDate }: {
@@ -177,27 +240,36 @@ function LaytimePDF({ ports, allowedLaytime, demurrageRate: _demurrageRate, layt
           <Text style={styles.infoText}>Ref. Date: {today}</Text>
         </View>
 
-        <View style={styles.table}>
-          <View style={[styles.tableRow, styles.tableHeader]}>
-            <Text style={styles.tableCell}>Field</Text>
-            <Text style={[styles.tableCellValue, styles.tableCellNoRight]}>Value</Text>
+        {/* Horizontal Main Details Table */}
+        <View style={styles.summaryTable}>
+          <View style={styles.summaryTableRow}>
+            {summaryFields.slice(0, 7).map((field, idx, arr) => (
+              <Text
+                style={
+                  idx === arr.length - 1
+                    ? [styles.tableHeaderCell, styles.tableHeaderCellLast]
+                    : [styles.tableHeaderCell]
+                }
+                key={field.label}
+              >
+                {field.label}
+              </Text>
+            ))}
           </View>
-          {summaryFields.map((field, idx) => (
-            <View style={styles.tableRow} key={field.label}>
-              <Text style={[
-                styles.tableCell,
-                (idx === summaryFields.length - 1 ? styles.tableCellLastRow : {}),
-              ]}>{field.label}</Text>
-              <Text style={[
-                styles.tableCellValue,
-                styles.tableCellNoRight,
-                (idx === summaryFields.length - 1 ? styles.tableCellLastRow : {}),
-                (field.isDemurrage ? styles.demurrage : {}),
-              ]}>
+          <View style={styles.summaryTableRow}>
+            {summaryFields.slice(0, 7).map((field, idx, arr) => (
+              <Text
+                style={
+                  idx === arr.length - 1
+                    ? [styles.tableValueCell, styles.tableValueCellLast]
+                    : [styles.tableValueCell]
+                }
+                key={field.label}
+              >
                 {field.value}
               </Text>
-            </View>
-          ))}
+            ))}
+          </View>
         </View>
 
         {/* Port Events Tables */}
@@ -207,36 +279,36 @@ function LaytimePDF({ ports, allowedLaytime, demurrageRate: _demurrageRate, layt
               {port.name} ({port.type === 'loading' ? 'Loading' : 'Discharging'})
             </Text>
             <View style={styles.eventsTable}>
-              <View style={[styles.tableRow, styles.eventsTableHeader]}>
-                <Text style={[styles.eventsTableCell, { width: '15%' }]}>Date</Text>
-                <Text style={[styles.eventsTableCell, { width: '10%' }]}>Day</Text>
-                <Text style={[styles.eventsTableCell, { width: '10%' }]}>Time</Text>
-                <Text style={[styles.eventsTableCell, { width: '35%' }]}>Event</Text>
-                <Text style={[styles.eventsTableCell, { width: '10%' }]}>Counts</Text>
-                <Text style={[styles.eventsTableCell, { width: '10%' }]}>Laytime</Text>
-                <Text style={[styles.eventsTableCell, { width: '10%' }]}>Demurrage</Text>
+              <View style={styles.tableRow}>
+                <Text style={[styles.tableHeaderCell, { width: '15%' }]}>Date</Text>
+                <Text style={[styles.tableHeaderCell, { width: '10%' }]}>Day</Text>
+                <Text style={[styles.tableHeaderCell, { width: '10%' }]}>Time</Text>
+                <Text style={[styles.tableHeaderCell, { width: '35%' }]}>Event</Text>
+                <Text style={[styles.tableHeaderCell, { width: '10%' }]}>Counts</Text>
+                <Text style={[styles.tableHeaderCell, { width: '10%' }]}>Laytime</Text>
+                <Text style={[styles.tableHeaderCell, styles.tableHeaderCellLast, { width: '10%' }]}>Demurrage</Text>
               </View>
               {port.events.map(event => (
                 <View style={styles.tableRow} key={event.id}>
-                  <Text style={[styles.eventsTableCell, { width: '15%' }]}>
+                  <Text style={[styles.tableValueCell, { width: '15%' }]}>
                     {dayjs(event.startDate).format('DD MMM YY')}
                   </Text>
-                  <Text style={[styles.eventsTableCell, { width: '10%' }]}>
+                  <Text style={[styles.tableValueCell, { width: '10%' }]}>
                     {dayjs(event.startDate).format('ddd')}
                   </Text>
-                  <Text style={[styles.eventsTableCell, { width: '10%' }]}>
+                  <Text style={[styles.tableValueCell, { width: '10%' }]}>
                     {event.startTime}
                   </Text>
-                  <Text style={[styles.eventsTableCell, { width: '35%' }]}>
+                  <Text style={[styles.tableValueCell, { width: '35%' }]}>
                     {event.description}
                   </Text>
-                  <Text style={[styles.eventsTableCell, { width: '10%' }]}>
+                  <Text style={[styles.tableValueCell, { width: '10%' }]}>
                     {event.counts ? 'Yes' : 'No'}
                   </Text>
-                  <Text style={[styles.eventsTableCell, { width: '10%' }]}>
+                  <Text style={[styles.tableValueCell, { width: '10%' }]}>
                     {event.counts ? `${event.laytimePercent}%` : '0%'}
                   </Text>
-                  <Text style={[styles.eventsTableCell, { width: '10%' }]}>
+                  <Text style={[styles.tableValueCell, styles.tableValueCellLast, { width: '10%' }]}>
                     {event.counts && typeof event.calculatedDuration === 'number' && event.calculatedDuration > 0 ? 'Yes' : 'No'}
                   </Text>
                 </View>
@@ -248,16 +320,16 @@ function LaytimePDF({ ports, allowedLaytime, demurrageRate: _demurrageRate, layt
               <>
                 <Text style={styles.deductionsHeader}>Deductions</Text>
                 <View style={styles.deductionsTable}>
-                  <View style={[styles.tableRow, styles.eventsTableHeader]}>
-                    <Text style={[styles.eventsTableCell, { width: '70%' }]}>Description</Text>
-                    <Text style={[styles.eventsTableCell, { width: '30%' }]}>Duration (hours)</Text>
+                  <View style={styles.tableRow}>
+                    <Text style={[styles.tableHeaderCell, { width: '70%' }]}>Description</Text>
+                    <Text style={[styles.tableHeaderCell, styles.tableHeaderCellLast, { width: '30%' }]}>Duration (hours)</Text>
                   </View>
                   {port.deductions.map(deduction => (
                     <View style={styles.tableRow} key={deduction.id}>
-                      <Text style={[styles.eventsTableCell, { width: '70%' }]}>
+                      <Text style={[styles.tableValueCell, { width: '70%' }]}>
                         {deduction.description}
                       </Text>
-                      <Text style={[styles.eventsTableCell, { width: '30%' }]}>
+                      <Text style={[styles.tableValueCell, styles.tableValueCellLast, { width: '30%' }]}>
                         {deduction.durationHours.toFixed(2)}
                       </Text>
                     </View>
@@ -267,6 +339,34 @@ function LaytimePDF({ ports, allowedLaytime, demurrageRate: _demurrageRate, layt
             )}
           </View>
         ))}
+
+        {/* Summary Table */}
+        <View style={styles.summaryTable}>
+          <View style={styles.summaryTableRow}>
+            <Text style={styles.tableHeaderCell}>Laytime Allowed</Text>
+            <Text style={styles.tableHeaderCell}>Total Laytime Used</Text>
+            <Text style={styles.tableHeaderCell}>Demurrage Rate</Text>
+            <Text style={[styles.tableHeaderCell, styles.tableHeaderCellLast]}>Demurrage Cost</Text>
+          </View>
+          <View style={styles.summaryTableRow}>
+            <Text style={styles.tableValueCell}>
+              {allowedLaytime.toFixed(2)} hours
+            </Text>
+            <Text style={styles.tableValueCell}>
+              {laytimeUsed.toFixed(2)} hours
+            </Text>
+            <Text style={styles.tableValueCell}>
+              ${_demurrageRate.toFixed(2)}/day
+            </Text>
+            <Text style={[
+              styles.tableValueCell,
+              styles.tableValueCellLast,
+              demurrageCost > 0 ? styles.summaryTableDemurrage : {}
+            ]}>
+              ${demurrageCost.toFixed(2)}
+            </Text>
+          </View>
+        </View>
       </Page>
     </Document>
   )
@@ -296,6 +396,8 @@ export default function EventForm({ initialCalculation, onClearCalculation, onSa
   const [voyageNo, setVoyageNo] = useState('')
   const [cpDate, setCpDate] = useState(null as any)
   const [blDate, setBlDate] = useState(null as any)
+  const navigate = useNavigate();
+  const { id } = useParams();
 
   const ukNumberFormat = new Intl.NumberFormat('en-GB', { minimumFractionDigits: 2, maximumFractionDigits: 2 })
 
@@ -323,7 +425,7 @@ export default function EventForm({ initialCalculation, onClearCalculation, onSa
 
   const handleSave = () => {
     const calculation: LaytimeCalculation = {
-      id: Date.now().toString(),
+      id: id || Date.now().toString(),
       timestamp: new Date().toISOString(),
       ports,
       allowedLaytime,
@@ -362,6 +464,7 @@ export default function EventForm({ initialCalculation, onClearCalculation, onSa
     setCpDate(null)
     setBlDate(null)
     if (onSaved) onSaved();
+    navigate(`/calculation/${calculation.id}`);
   }
 
   return (
@@ -479,15 +582,25 @@ export default function EventForm({ initialCalculation, onClearCalculation, onSa
             }
             fileName={`laytime-report-${vesselName || 'unnamed'}-${voyageNo || 'novoyage'}.pdf`}
             className="ant-btn ant-btn-primary ant-btn-lg"
+            onClick={() => {
+              // Add a small delay to ensure the PDF is generated
+              return new Promise(resolve => setTimeout(resolve, 100));
+            }}
           >
-            {({ loading }) => (
+            {({ loading, error }) => (
               <Button
                 type="primary"
                 size="large"
                 loading={loading}
-                disabled={loading}
+                disabled={loading || !!error}
+                onClick={(e) => {
+                  if (error) {
+                    e.preventDefault();
+                    message.error('Failed to generate PDF. Please try again.');
+                  }
+                }}
               >
-                Download PDF
+                {error ? 'Error' : 'Download PDF'}
               </Button>
             )}
           </PDFDownloadLink>

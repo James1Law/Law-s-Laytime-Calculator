@@ -5,12 +5,14 @@ import dayjs from 'dayjs'
 import { Table, Button, Space, Popconfirm } from 'antd'
 import { DeleteOutlined } from '@ant-design/icons'
 import type { ColumnsType } from 'antd/es/table'
+import { useNavigate } from 'react-router-dom'
 
 interface SavedCalculationsProps {
   onOpenCalculation?: (calc: LaytimeCalculation) => void
 }
 
 export default function SavedCalculations({ onOpenCalculation }: SavedCalculationsProps) {
+  const navigate = useNavigate()
   let saved: LaytimeCalculation[] = []
   try {
     const raw = localStorage.getItem('laytime_calculations')
@@ -99,7 +101,13 @@ export default function SavedCalculations({ onOpenCalculation }: SavedCalculatio
       width: 200,
       render: (_: any, record: LaytimeCalculation) => (
         <Space>
-          <Button type="primary" onClick={() => onOpenCalculation && onOpenCalculation(record)}>
+          <Button 
+            type="primary" 
+            onClick={() => {
+              if (onOpenCalculation) onOpenCalculation(record);
+              navigate(`/calculation/${record.id}`);
+            }}
+          >
             Open
           </Button>
           <Popconfirm
