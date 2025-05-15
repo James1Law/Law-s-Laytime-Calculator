@@ -55,7 +55,6 @@ export default function PortForm({ onPortsChange, initialPorts }: PortFormProps)
 
   const eventColumns = [
     { title: 'Start Date', dataIndex: 'startDate', key: 'startDate', render: (date: string) => dayjs(date).format('DD-MMM-YYYY') },
-    { title: 'Day', dataIndex: 'startDate', key: 'day', render: (date: string) => getDayOfWeek(date) },
     { title: 'Start Time', dataIndex: 'startTime', key: 'startTime' },
     { title: 'End Date', dataIndex: 'endDate', key: 'endDate', render: (date: string) => dayjs(date).format('DD-MMM-YYYY') },
     { title: 'End Time', dataIndex: 'endTime', key: 'endTime' },
